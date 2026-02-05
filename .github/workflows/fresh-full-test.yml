@@ -26,6 +26,11 @@ jobs:
           RSOLV_TESTING_MODE: 'true'
           RSOLV_FORCE_FRESH_ISSUES: 'true'
 
+      - name: Wait for GitHub API consistency
+        run: |
+          echo "Waiting 15s for GitHub API eventual consistency..."
+          sleep 15
+
       - name: List issues created
         run: |
           echo "Issues created by SCAN phase:"
