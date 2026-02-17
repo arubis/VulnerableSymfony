@@ -34,7 +34,7 @@ jobs:
           restore-keys: |
             mise-${{ runner.os }}-
       - name: Run RSOLV SCAN Phase
-        uses: RSOLV-dev/RSOLV-action@v3
+        uses: RSOLV-dev/RSOLV-action@v4
         id: scan
         with:
           mode: SCAN
@@ -58,7 +58,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run RSOLV VALIDATE Phase
-        uses: RSOLV-dev/RSOLV-action@v3
+        uses: RSOLV-dev/RSOLV-action@v4
         id: validate
         with:
           mode: VALIDATE
@@ -78,7 +78,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run RSOLV MITIGATE Phase
-        uses: RSOLV-dev/RSOLV-action@v3
+        uses: RSOLV-dev/RSOLV-action@v4
         id: mitigate
         with:
           mode: MITIGATE
