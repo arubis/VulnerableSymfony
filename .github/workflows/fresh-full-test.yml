@@ -25,6 +25,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # RFC-105: Cache mise runtimes to avoid recompiling Erlang/Elixir/Ruby on every run
+      - name: Cache mise runtimes
+        uses: actions/cache@v4
+        with:
+          path: .mise-cache
+          key: mise-${{ runner.os }}-${{ hashFiles('**/.tool-versions', '**/.mise.toml', '**/mix.lock', '**/Gemfile.lock') }}
+          restore-keys: |
+            mise-${{ runner.os }}-
       - name: Run RSOLV SCAN Phase
         uses: RSOLV-dev/RSOLV-action@v3
         id: scan
