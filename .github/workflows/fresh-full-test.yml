@@ -2,6 +2,15 @@ name: Fresh Full Test - All Phases with New Issues
 
 on:
   workflow_dispatch:
+    inputs:
+      api_target:
+        description: 'API target (production or staging)'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
 
 permissions:
   contents: write
@@ -11,6 +20,8 @@ permissions:
 jobs:
   scan-validate-mitigate:
     runs-on: ubuntu-latest
+    env:
+      RSOLV_API_URL: ${{ inputs.api_target == 'staging' && 'https://api.rsolv-staging.com' || secrets.RSOLV_API_URL || 'https://api.rsolv.dev' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -19,7 +30,7 @@ jobs:
         id: scan
         with:
           mode: SCAN
-          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+          rsolvApiKey: ${{ inputs.api_target == 'staging' && secrets.RSOLV_API_KEY_STAGING || secrets.RSOLV_API_KEY }}
           max_issues: 2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -43,7 +54,7 @@ jobs:
         id: validate
         with:
           mode: VALIDATE
-          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+          rsolvApiKey: ${{ inputs.api_target == 'staging' && secrets.RSOLV_API_KEY_STAGING || secrets.RSOLV_API_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RSOLV_TESTING_MODE: 'true'
@@ -63,7 +74,7 @@ jobs:
         id: mitigate
         with:
           mode: MITIGATE
-          rsolvApiKey: ${{ secrets.RSOLV_API_KEY }}
+          rsolvApiKey: ${{ inputs.api_target == 'staging' && secrets.RSOLV_API_KEY_STAGING || secrets.RSOLV_API_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RSOLV_TESTING_MODE: 'true'
