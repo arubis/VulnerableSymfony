@@ -23,7 +23,7 @@ class LoginController extends AbstractController
             $plainPassword = $request->get("password");
 
             try {
-                $user = $repository->getUserLogin($email, $plainPassword);
+                $user = $repository->getUserLogin($email, md5($plainPassword));
 
                 if (!$user) {
                     $this->addFlash('error', 'Invalid credentials');
