@@ -8,7 +8,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
-use function PHPUnit\Framework\returnArgument;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -66,14 +65,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * #VULNERABILITY: Intended vulnerable request (SQL Injection)
+     * Authenticate a user by email and password using parameterized queries.
      */
     public function getUserLogin(string $email, string $password): false|array
     {
-        $hashedPassword = md5($password);
-        $rawSql = "SELECT * FROM user WHERE email = '$email' AND password = '$hashedPassword' LIMIT 1";
         $conn = $this->getEntityManager()->getConnection();
-        $stmt = $conn->prepare($rawSql);
-        return $stmt->executeQuery([])->fetchAssociative();
+        $sql = "SELECT * FROM user WHERE email = :email LIMIT 1";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue('email', $email);
+        $result = $stmt->executeQuery()->fetchAssociative();
+
+        if (!$result) {
+            return false;
+        }
+
+        if (!password_verify($password, $result['password'])) {
+            return false;
+        }
+
+        return $result;
     }
 }
