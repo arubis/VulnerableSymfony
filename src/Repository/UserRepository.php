@@ -5,10 +5,10 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
-use function PHPUnit\Framework\returnArgument;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -20,7 +20,7 @@ use function PHPUnit\Framework\returnArgument;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private PasswordHasherInterface $passwordHasher)
     {
         parent::__construct($registry, User::class);
     }
@@ -65,15 +65,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->save($user, true);
     }
 
-    /**
-     * #VULNERABILITY: Intended vulnerable request (SQL Injection)
-     */
     public function getUserLogin(string $email, string $password): false|array
     {
-        $hashedPassword = md5($password);
-        $rawSql = "SELECT * FROM user WHERE email = '$email' AND password = '$hashedPassword' LIMIT 1";
+        $hashedPassword = $this->passwordHasher->hash($password);
+        $sql = 'SELECT * FROM user WHERE email = :email AND password = :password LIMIT 1';
         $conn = $this->getEntityManager()->getConnection();
-        $stmt = $conn->prepare($rawSql);
-        return $stmt->executeQuery([])->fetchAssociative();
+        $stmt = $conn->prepare($sql);
+        return $stmt->executeQuery(['email' => $email, 'password' => $hashedPassword])->fetchAssociative();
     }
 }
