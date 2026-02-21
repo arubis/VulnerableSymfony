@@ -86,6 +86,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RSOLV_TESTING_MODE: 'true'
+          RSOLV_EDUCATIONAL_PR: 'false'
 
       - name: List PRs created
         run: |
